@@ -100,7 +100,7 @@ namespace Bushuosx.ConsoleMenu
         protected void SafeWrite(string text)
         {
             var oc = CatchConsoleColor();
-            var f = Disabled ? DisabledItemForegroundColor : GetColor();
+            var f = GetColor();
             var sc = GetSafeColor(oc.BackgroundColor, f, false);
             SetConsoleColor(sc);
             Console.Write(text);
@@ -110,7 +110,7 @@ namespace Bushuosx.ConsoleMenu
         protected void SafeWriteLine(string text, bool intensity)
         {
             var oc = CatchConsoleColor();
-            var f = Disabled ? DisabledItemForegroundColor : GetColor();
+            var f = GetColor();
             var sc = GetSafeColor(oc.BackgroundColor, f, intensity);
             SetConsoleColor(sc);
             Console.WriteLine(text);
@@ -191,26 +191,36 @@ namespace Bushuosx.ConsoleMenu
             OnAfterPaint?.Invoke(this, null);
         }
 
+        private bool IsCanBeSelectItem(MenuItem item)
+        {
+            return item.Visible && !item.Disabled;
+        }
         private int GetUpChildItemIndex()
         {
+            //需要修改
             if (!SelectedIndexIsValid)
             {
-                if (IsValidChildIndex(0))
-                {
-                    return 0;
-                }
-            }
-            else
-            {
-                var i = SelectedIndex - 1;
+                var i = _children.FindLastIndex(x => IsCanBeSelectItem(x));
                 if (IsValidChildIndex(i))
                 {
                     return i;
                 }
+            }
+            else
+            {
+                var up = SelectedIndex - 1;
+                if (IsValidChildIndex(up))
+                {
+                    var i = _children.FindLastIndex(up, x => IsCanBeSelectItem(x));
+                    if (IsValidChildIndex(i))
+                    {
+                        return i;
+                    }
+                }
                 else
                 {
-                    var last = Children.Count - 1;//末尾元素
-                    if (SelectedIndex < last)
+                    var last = _children.FindLastIndex(x => IsCanBeSelectItem(x));
+                    if (SelectedIndex != last)
                     {
                         return last;
                     }
@@ -224,23 +234,29 @@ namespace Bushuosx.ConsoleMenu
         {
             if (!SelectedIndexIsValid)
             {
-                if (IsValidChildIndex(0))
-                {
-                    return 0;
-                }
-            }
-            else
-            {
-                var i = SelectedIndex + 1;
+                var i = _children.FindIndex(x => IsCanBeSelectItem(x));
                 if (IsValidChildIndex(i))
                 {
                     return i;
                 }
+            }
+            else
+            {
+                var down = SelectedIndex + 1;
+                if (IsValidChildIndex(down))
+                {
+                    var i = _children.FindIndex(down, x => IsCanBeSelectItem(x));
+                    if (IsValidChildIndex(i))
+                    {
+                        return i;
+                    }
+                }
                 else
                 {
-                    if (SelectedIndex > 0)//当前前面还有元素
+                    var first = _children.FindIndex(x => IsCanBeSelectItem(x));
+                    if (SelectedIndex != first)//当前前面还有元素
                     {
-                        return 0;
+                        return first;
                     }
                 }
             }
@@ -291,7 +307,7 @@ namespace Bushuosx.ConsoleMenu
                 else
                 {
                     //其它按键
-                    var items = Children.Where(x => x.Key.HasValue && string.Equals(x.Key.Value.ToString(), readKeyInfo.KeyChar.ToString(), StringComparison.CurrentCultureIgnoreCase)).ToList();
+                    var items = Children.Where(x => x.Key.HasValue && IsCanBeSelectItem(x) && string.Equals(x.Key.Value.ToString(), readKeyInfo.KeyChar.ToString(), StringComparison.CurrentCultureIgnoreCase)).ToList();
                     if (items.Count == 0)
                     {
                         continue;
@@ -329,7 +345,15 @@ namespace Bushuosx.ConsoleMenu
             }
         }
 
+        /// <summary>
+        /// if true，不响应click,select
+        /// </summary>
         public bool Disabled { get; set; }
+
+        /// <summary>
+        /// if false，不显示，且不响应click,select
+        /// </summary>
+        public bool Visible { get; set; } = true;
 
         /// <summary>
         /// 当前选择的child项
@@ -347,7 +371,10 @@ namespace Bushuosx.ConsoleMenu
         {
             for (int i = 0; i < Children.Count; i++)
             {
-                Children[i].SafeWriteTitle(true, SelectedIndexIsValid && SelectedIndex == i);
+                if (Children[i].Visible)
+                {
+                    Children[i].SafeWriteTitle(true, SelectedIndexIsValid && SelectedIndex == i);
+                }
             }
         }
 
@@ -491,7 +518,7 @@ namespace Bushuosx.ConsoleMenu
         public ConsoleColor? Color { get; set; }
         protected ConsoleColor GetColor()
         {
-            return Color ?? Console.ForegroundColor;
+            return Disabled ? DisabledItemForegroundColor : Color ?? Console.ForegroundColor;
         }
 
 
@@ -509,7 +536,7 @@ namespace Bushuosx.ConsoleMenu
         }
         public void Click()
         {
-            if (!Disabled)
+            if (Visible && !Disabled)
             {
                 RaiseClick(null);
             }
