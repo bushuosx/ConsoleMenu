@@ -10,8 +10,9 @@ namespace Bushuosx.ConsoleMenu.ConsoleApp
             Console.WriteLine("Hello World!");
 
             MenuItem subMenu = new MenuItem("文件file.txt") { Color = ConsoleColor.Yellow };
-            subMenu.AddSubMenu(new MenuItem("编辑", (s, e) => global::System.Console.WriteLine("开始编辑……")) { Key = 'e', Color = ConsoleColor.Green });
+            subMenu.AddSubMenu(new MenuItem("编辑", () => Console.WriteLine("开始编辑……")) { Key = 'e', Color = ConsoleColor.Green });
             subMenu.AddSubMenu(new MenuItem("浏览"));
+            subMenu.OnBeforePaint += SubMenu_OnBeforePaint;
 
             MenuItem menuItem = new MenuItem("主菜单") { Color = ConsoleColor.Cyan };
             var openMenu = new MenuItem("打开") { Key = 'o', Color = ConsoleColor.Green };
@@ -23,18 +24,13 @@ namespace Bushuosx.ConsoleMenu.ConsoleApp
 
 
             menuItem.Active();
+        }
 
-
-            //Console.Write("请选择：");
-            //while (true)
-            //{
-            //    var k = Console.ReadKey(false);
-            //    if (k.Key == ConsoleKey.O)
-            //    {
-            //        openMenu.Click();
-            //        break;
-            //    }
-            //}
+        static void SubMenu_OnBeforePaint(object s, MenuItemEventArgs args)
+        {
+            Console.WriteLine("Painting");
+            Console.WriteLine("这是文件……");
+            Console.WriteLine("");
         }
     }
 }

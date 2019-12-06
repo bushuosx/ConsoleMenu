@@ -5,6 +5,9 @@ using System.Linq;
 
 namespace Bushuosx.ConsoleMenu
 {
+    /// <summary>
+    /// 适用于ConsoleApplication的菜单类
+    /// </summary>
     public class MenuItem
     {
         public MenuItem(string title)
@@ -12,9 +15,13 @@ namespace Bushuosx.ConsoleMenu
             Title = title;
             //OnClosing += (s, e) => Reset();
         }
-        public MenuItem(string title, EventHandler<MenuItemEventArgs> onClicked) : this(title)
+        public MenuItem(string title, EventHandler<MenuItemEventArgs> onClick) : this(title)
         {
-            OnClick += onClicked;
+            OnClick += onClick;
+        }
+        public MenuItem(string title, Action onClick) : this(title)
+        {
+            OnClick += (s, e) => onClick();
         }
 
         private struct Point
@@ -37,17 +44,25 @@ namespace Bushuosx.ConsoleMenu
         private SafeColor? ColorOnActive { get; set; }
         private bool? CursorVisibleOnActive { get; set; }
 
-        protected bool ShouldScreen { get; set; }
+        protected bool ShouldClearScreen { get; set; }
+
+        /// <summary>
+        /// 激活此菜单
+        /// </summary>
+        /// <param name="clearScreen"></param>
         public void Active(bool clearScreen = true)
         {
             Init();
-            ShouldScreen = clearScreen;
+            ShouldClearScreen = clearScreen;
 
             RePaint();
 
             LoopMessage();
         }
 
+        /// <summary>
+        /// 保存环境，初始化一些参数
+        /// </summary>
         private void Init()
         {
             PointOnActive = CatchCursorPoint();
@@ -59,6 +74,9 @@ namespace Bushuosx.ConsoleMenu
             //Console.CursorVisible = false;
         }
 
+        /// <summary>
+        /// 恢复保存的环境
+        /// </summary>
         private void Reset()
         {
             if (ColorOnActive.HasValue)
@@ -71,6 +89,7 @@ namespace Bushuosx.ConsoleMenu
                 Console.CursorVisible = CursorVisibleOnActive.Value;
             }
         }
+
 
         protected void SafeWriteTitle(bool showKey, bool isSelected)
         {
@@ -138,7 +157,10 @@ namespace Bushuosx.ConsoleMenu
             //Console.Write(Console.Out.NewLine);
         }
 
-
+        /// <summary>
+        /// 获取父菜单列表，由近及远排列
+        /// </summary>
+        /// <returns></returns>
         public List<MenuItem> GetParents()
         {
             var rst = new List<MenuItem>(10);//业务上一般10层够用了，默认10层为了减少内存分配次数
@@ -149,11 +171,13 @@ namespace Bushuosx.ConsoleMenu
 
         protected void RePaint()
         {
-            if (ShouldScreen)
+            if (ShouldClearScreen)
             {
                 Console.Clear();
             }
             //Console.SetCursorPosition(PointOnActive.Left, PointOnActive.Top);
+
+            OnBeforePaint?.Invoke(this, null);
 
             ShowParentPath();
             Console.WriteLine();
@@ -163,17 +187,17 @@ namespace Bushuosx.ConsoleMenu
 
             Console.WriteLine();
             ShowChildren();
+
+            OnAfterPaint?.Invoke(this, null);
         }
 
-
-        private void SelectUpItem()
+        private int GetUpChildItemIndex()
         {
             if (!SelectedIndexIsValid)
             {
                 if (IsValidChildIndex(0))
                 {
-                    SelectedIndex = 0;
-                    RePaint();
+                    return 0;
                 }
             }
             else
@@ -181,28 +205,28 @@ namespace Bushuosx.ConsoleMenu
                 var i = SelectedIndex - 1;
                 if (IsValidChildIndex(i))
                 {
-                    SelectedIndex = i;
-                    RePaint();
+                    return i;
                 }
                 else
                 {
                     var last = Children.Count - 1;//末尾元素
                     if (SelectedIndex < last)
                     {
-                        SelectedIndex = last;
-                        RePaint();
+                        return last;
                     }
                 }
             }
+
+            return SelectedIndex;
         }
-        private void SelectDownItem()
+
+        private int GetDownChildItemIndex()
         {
             if (!SelectedIndexIsValid)
             {
                 if (IsValidChildIndex(0))
                 {
-                    SelectedIndex = 0;
-                    RePaint();
+                    return 0;
                 }
             }
             else
@@ -210,18 +234,18 @@ namespace Bushuosx.ConsoleMenu
                 var i = SelectedIndex + 1;
                 if (IsValidChildIndex(i))
                 {
-                    SelectedIndex = i;
-                    RePaint();
+                    return i;
                 }
                 else
                 {
-                    if (SelectedIndex > 0)
+                    if (SelectedIndex > 0)//当前前面还有元素
                     {
-                        SelectedIndex = 0;
-                        RePaint();
+                        return 0;
                     }
                 }
             }
+
+            return SelectedIndex;
         }
 
         protected bool SelectedIndexIsValid
@@ -233,7 +257,11 @@ namespace Bushuosx.ConsoleMenu
             return index >= 0 && index < Children.Count;
         }
 
-        protected bool BreakLoop { get; set; }
+        private bool BreakLoop { get; set; }
+
+        /// <summary>
+        /// 循环读取用户按键，响应事件
+        /// </summary>
         private void LoopMessage()
         {
             while (true)
@@ -242,11 +270,11 @@ namespace Bushuosx.ConsoleMenu
                 var key = readKeyInfo.Key;
                 if (key == ConsoleKey.UpArrow)
                 {
-                    SelectUpItem();
+                    SelectChildItem(GetUpChildItemIndex());
                 }
                 else if (key == ConsoleKey.DownArrow)
                 {
-                    SelectDownItem();
+                    SelectChildItem(GetDownChildItemIndex());
                 }
                 else if (key == ConsoleKey.Enter)
                 {
@@ -271,7 +299,7 @@ namespace Bushuosx.ConsoleMenu
                     else
                     {
                         var i = _children.FindIndex(x => x == items[0]);
-                        RaiseSelectChange(i);
+                        SelectChildItem(i);
                         if (items.Count == 1)
                         {
                             //唯一项
@@ -472,7 +500,7 @@ namespace Bushuosx.ConsoleMenu
         {
             if (HasAnyChild)
             {
-                Active(Parent.ShouldScreen);
+                Active(Parent.ShouldClearScreen);
             }
             else
             {
@@ -481,7 +509,10 @@ namespace Bushuosx.ConsoleMenu
         }
         public void Click()
         {
-            RaiseClick(null);
+            if (!Disabled)
+            {
+                RaiseClick(null);
+            }
         }
 
         //public EventHandler<MenuItemEventArgs> OnChildrenChanged { get; }
@@ -502,11 +533,11 @@ namespace Bushuosx.ConsoleMenu
                 //跳出本地循环
                 Reset();
                 BreakLoop = true;
-                Parent?.Active(ShouldScreen);
+                Parent?.Active(ShouldClearScreen);
             }
         }
 
-        public event EventHandler<MenuItemEventArgs> OnSelectChange;
+        public event EventHandler<MenuItemEventArgs> OnSelectChanged;
         //public void SelectItem(int index)
         //{
         //    if (IsValidChildIndex(index))
@@ -516,14 +547,17 @@ namespace Bushuosx.ConsoleMenu
         //        RePaint();
         //    }
         //}
-        protected void RaiseSelectChange(int index)
+        protected void SelectChildItem(int index)
         {
-            if (IsValidChildIndex(index))
+            if (SelectedIndex != index && IsValidChildIndex(index))
             {
                 SelectedIndex = index;
-                RaiseEvent(OnSelectChange, null);
+                RaiseEvent(OnSelectChanged, null);
                 RePaint();
             }
         }
+
+        public event EventHandler<MenuItemEventArgs> OnBeforePaint;
+        public event EventHandler<MenuItemEventArgs> OnAfterPaint;
     }
 }
