@@ -13,83 +13,195 @@ namespace Bushuosx.ConsoleMenu
         public MenuItem(string title)
         {
             Title = title;
-            //OnClosing += (s, e) => Reset();
         }
         public MenuItem(string title, EventHandler<MenuItemEventArgs> onClick) : this(title)
         {
             OnClick += onClick;
         }
+        public MenuItem(string title, EventHandler<MenuItemEventArgs> onClick, char key) : this(title, onClick)
+        {
+            Key = key;
+        }
         public MenuItem(string title, Action onClick) : this(title)
         {
             OnClick += (s, e) => onClick();
         }
-
-        private struct Point
+        public MenuItem(string title, Action onClick, char key) : this(title, onClick)
         {
-            public Point(int left, int top)
-            {
-                Left = left;
-                Top = top;
-            }
-            public int Left;
-            public int Top;
+            Key = key;
         }
+        protected MenuContext Context { get; private set; }
 
-        private Point CatchCursorPoint()
-        {
-            return new Point(Console.CursorLeft, Console.CursorTop);
-        }
+        //protected MenuStyle Style { get; set; }
 
-        private Point? PointOnActive { get; set; }
-        private SafeColor? ColorOnActive { get; set; }
-        private bool? CursorVisibleOnActive { get; set; }
+        //protected struct CursorStatus
+        //{
+        //    public int Left;
+        //    public int Top;
+        //    public int Size;
+        //    public bool Visible;
+        //}
+        //private CursorStatus CatchCursorStatus()
+        //{
+        //    return new CursorStatus { Left = Console.CursorLeft, Top = Console.CursorTop, Size = Console.CursorSize, Visible = Console.CursorVisible };
+        //}
+        //private void SetCursorStatus(CursorStatus cursorStatus)
+        //{
+        //    Console.SetCursorPosition(cursorStatus.Left, cursorStatus.Top);
+        //    Console.CursorSize = cursorStatus.Size;
+        //    Console.CursorVisible = cursorStatus.Visible;
+        //}
 
-        protected bool ShouldClearScreen { get; set; }
+        //protected struct SafeConsoleColor
+        //{
+        //    public ConsoleColor BackgroundColor;
+        //    public ConsoleColor ForegroundColor;
+        //}
+
+        //protected SafeConsoleColor CatchConsoleColor()
+        //{
+        //    return new SafeConsoleColor { BackgroundColor = Console.BackgroundColor, ForegroundColor = Console.ForegroundColor };
+        //}
+        //protected void SetConsoleColor(SafeConsoleColor color)
+        //{
+        //    Console.BackgroundColor = color.BackgroundColor;
+        //    Console.ForegroundColor = color.ForegroundColor;
+        //}
+
+        //protected SafeConsoleColor BuildSafeColor(ConsoleColor bColor, ConsoleColor fColor, bool intensity)
+        //{
+        //    var rst = new SafeConsoleColor { BackgroundColor = bColor, ForegroundColor = fColor };
+
+        //    if (fColor == bColor)
+        //    {
+        //        if (rst.BackgroundColor == ConsoleColor.White)
+        //        {
+        //            rst.ForegroundColor = ConsoleColor.Black;
+        //        }
+        //        else if (rst.BackgroundColor == ConsoleColor.Black)
+        //        {
+        //            rst.ForegroundColor = ConsoleColor.White;
+        //        }
+        //        else
+        //        {
+        //            rst.BackgroundColor = ConsoleColor.Black;
+        //        }
+        //    }
+        //    else if (intensity)
+        //    {
+        //        rst.BackgroundColor = fColor;
+        //        rst.ForegroundColor = bColor;
+        //    }
+        //    return rst;
+        //}
+
+        ///// <summary>
+        ///// console menu 环境
+        ///// </summary>
+        //protected struct ConsoleMenuContext
+        //{
+        //    public MenuStyle MenuStyle;
+        //    public CursorStatus CursorStatus;
+        //    public SafeConsoleColor ConsoleColor;
+        //}
+
+
+        protected ConsoleColor DisabledItemForegroundColor = ConsoleColor.DarkGray;
+
+        //private CursorStatus? PointOnActive { get; set; }
+        //private SafeConsoleColor? ColorOnActive { get; set; }
+        //private bool? CursorVisibleOnActive { get; set; }
+
+        //protected bool ShouldClearScreen { get; set; }
+
+        /// <summary>
+        /// 指示当前菜单是否正在展示
+        /// </summary>
+        protected bool IsActived { get; set; }
 
         /// <summary>
         /// 激活此菜单
         /// </summary>
         /// <param name="clearScreen"></param>
-        public void Active(bool clearScreen = true)
+        public void Active(MenuStyle menuStyle)
         {
-            Init();
-            ShouldClearScreen = clearScreen;
+            Context = new MenuContext(menuStyle);
+
+            Active();
+        }
+
+        protected void Active(MenuContext menuContext)
+        {
+            Context = menuContext;
+
+            Active();
+        }
+
+        private void Active()
+        {
+            Enter();
 
             RePaint();
 
             LoopMessage();
         }
 
-        /// <summary>
-        /// 保存环境，初始化一些参数
-        /// </summary>
-        private void Init()
+        private void PrepareDrawingContext()
         {
-            PointOnActive = CatchCursorPoint();
-            ColorOnActive = CatchConsoleColor();
-            CursorVisibleOnActive = Console.CursorVisible;
-
-            BreakLoop = false;
-            SelectedIndex = 0;
-            //Console.CursorVisible = false;
+            switch (Context.Style.DrawingStyle)
+            {
+                case MenuDrawingStyle.ClearSreen:
+                    Console.Clear();
+                    break;
+                case MenuDrawingStyle.InheritStartPoint:
+                    var lastCursor = new CursorStatus();
+                    if (Context.CursorStatus.Left > lastCursor.Left || Context.CursorStatus.Top > lastCursor.Top)
+                    {
+                        throw new Exception("consolemenu 启动环境信息已被破坏");
+                    }
+                    if (lastCursor.Top >= Console.BufferHeight - 1)
+                    {
+                        throw new Exception("console 缓冲区已用尽");
+                    }
+                    else
+                    {
+                        for (int i = Context.CursorStatus.Top; i < lastCursor.Top; i++)
+                        {
+                            Console.MoveBufferArea(0, Console.BufferHeight - 1, Console.BufferWidth, 1, 0, i);
+                        }
+                        Context.SetToConsole();
+                    }
+                    break;
+                case MenuDrawingStyle.FollowSystem:
+                    break;
+                default:
+                    throw new NotImplementedException(string.Format("未实现的绘制样式：{0}", Enum.GetName(typeof(MenuDrawingStyle), Context.Style.DrawingStyle)));
+            }
         }
 
         /// <summary>
         /// 恢复保存的环境
         /// </summary>
-        private void Reset()
+        private void RestoreContext()
         {
-            if (ColorOnActive.HasValue)
-            {
-                Console.BackgroundColor = ColorOnActive.Value.BackgroundColor;
-                Console.ForegroundColor = ColorOnActive.Value.ForegroundColor;
-            }
-            if (CursorVisibleOnActive.HasValue)
-            {
-                Console.CursorVisible = CursorVisibleOnActive.Value;
-            }
+            PrepareDrawingContext();
         }
 
+        /// <summary>
+        /// 初始化一些参数
+        /// </summary>
+        private void Enter()
+        {
+            BreakLoop = false;
+            SelectedIndex = 0;
+            //Console.CursorVisible = false;
+            IsActived = true;
+        }
+        private void Exit()
+        {
+            BreakLoop = true;
+            IsActived = false;
+        }
 
         protected void SafeWriteTitle(bool showKey, bool isSelected)
         {
@@ -99,25 +211,29 @@ namespace Bushuosx.ConsoleMenu
 
         protected void SafeWrite(string text)
         {
-            var oc = CatchConsoleColor();
+            var oc = new SafeConsoleColor();
             var f = GetColor();
-            var sc = GetSafeColor(oc.BackgroundColor, f, false);
-            SetConsoleColor(sc);
+            var sc = new SafeConsoleColor(oc.BackgroundColor, f, false);
+            sc.SetToConsole();
             Console.Write(text);
-            SetConsoleColor(oc);
+            oc.SetToConsole();
         }
 
         protected void SafeWriteLine(string text, bool intensity)
         {
-            var oc = CatchConsoleColor();
+            var oc = new SafeConsoleColor();
             var f = GetColor();
-            var sc = GetSafeColor(oc.BackgroundColor, f, intensity);
-            SetConsoleColor(sc);
+            var sc = new SafeConsoleColor(oc.BackgroundColor, f, intensity);
+            sc.SetToConsole();
             Console.WriteLine(text);
-            SetConsoleColor(oc);
+            oc.SetToConsole();
         }
 
-        public MenuItemTitleStyle TitleStyle { get; set; } = MenuItemTitleStyle.KeyEnd;
+        /// <summary>
+        /// 根据需求生成标题样式
+        /// </summary>
+        /// <param name="showKey"></param>
+        /// <returns></returns>
         private string BuildTitleString(bool showKey)
         {
             if (!showKey)
@@ -125,24 +241,23 @@ namespace Bushuosx.ConsoleMenu
                 return Title;
             }
 
-            if (TitleStyle == MenuItemTitleStyle.KeyFront)
+            var titleStyle = Context == null ? Parent.Context.Style.TitleStyle : Context.Style.TitleStyle;
+
+            switch (titleStyle)
             {
-                return Key.HasValue ? $"{Key.Value.ToString().ToUpper()} - {Title}" : $"  - {Title}";
-
+                case MenuItemTitleStyle.KeyFront:
+                    return char.IsLetterOrDigit(Key) ? $"{Key.ToString().ToUpper()} - {Title}" : $"? - {Title}";
+                case MenuItemTitleStyle.KeyEnd:
+                    return char.IsLetterOrDigit(Key) ? $"{Title}({Key.ToString().ToUpper()})" : Title;
+                default:
+                    throw new NotImplementedException($"{titleStyle.ToString()}未实现");
             }
-            else if (TitleStyle == MenuItemTitleStyle.KeyEnd)
-            {
-                return Key.HasValue ? $"{Title}({Key.Value.ToString().ToUpper()})" : Title;
-
-            }
-
-            throw new NotImplementedException($"{TitleStyle.ToString()}未实现");
         }
 
         private void ShowParentPath()
         {
             var ps = GetParents();
-            SafeWrite("路径：");
+            SafeWrite("菜单路径：");
 
             if (ps.Count > 0)
             {
@@ -163,33 +278,39 @@ namespace Bushuosx.ConsoleMenu
         /// <returns></returns>
         public List<MenuItem> GetParents()
         {
-            var rst = new List<MenuItem>(10);//业务上一般10层够用了，默认10层为了减少内存分配次数
+            var rst = new List<MenuItem>();
             AppendParent(Parent, rst);
-            //rst.Reverse();//反转数据
             return rst;
         }
 
         protected void RePaint()
         {
-            if (ShouldClearScreen)
+            if (IsActived)
             {
-                Console.Clear();
+                PrepareDrawingContext();
+
+                OnBeforePaint?.Invoke(this, null);
+
+                ShowParentPath();
+                Console.WriteLine();
+
+                SafeWriteTitle(false, false);
+                ShowDescription();
+
+                Console.WriteLine();
+                ShowChildren();
+
+                OnAfterPaint?.Invoke(this, null);
             }
-            //Console.SetCursorPosition(PointOnActive.Left, PointOnActive.Top);
-
-            OnBeforePaint?.Invoke(this, null);
-
-            ShowParentPath();
-            Console.WriteLine();
-
-            SafeWriteTitle(false, false);
-            ShowDescription();
-
-            Console.WriteLine();
-            ShowChildren();
-
-            OnAfterPaint?.Invoke(this, null);
         }
+
+        //protected void RePaintOnChanged()
+        //{
+        //    if (IsActived)
+        //    {
+        //        RePaint();
+        //    }
+        //}
 
         private bool IsCanBeSelectItem(MenuItem item)
         {
@@ -307,7 +428,7 @@ namespace Bushuosx.ConsoleMenu
                 else
                 {
                     //其它按键
-                    var items = Children.Where(x => x.Key.HasValue && IsCanBeSelectItem(x) && string.Equals(x.Key.Value.ToString(), readKeyInfo.KeyChar.ToString(), StringComparison.CurrentCultureIgnoreCase)).ToList();
+                    var items = Children.Where(x => char.IsLetterOrDigit(x.Key) && IsCanBeSelectItem(x) && string.Equals(x.Key.ToString(), readKeyInfo.KeyChar.ToString(), StringComparison.CurrentCultureIgnoreCase)).ToList();
                     if (items.Count == 0)
                     {
                         continue;
@@ -346,19 +467,51 @@ namespace Bushuosx.ConsoleMenu
         }
 
         /// <summary>
+        /// 通知父菜单，有更新，应当重绘
+        /// </summary>
+        private void NoticeParentToRepaint()
+        {
+            Parent?.RePaint();
+        }
+
+        private bool _disabled = false;
+        /// <summary>
         /// if true，不响应click,select
         /// </summary>
-        public bool Disabled { get; set; }
+        public bool Disabled
+        {
+            get => _disabled;
+            set
+            {
+                if (_disabled != value)
+                {
+                    _disabled = value;
+                    NoticeParentToRepaint();
+                }
+            }
+        }
 
+        private bool _visible = true;
         /// <summary>
         /// if false，不显示，且不响应click,select
         /// </summary>
-        public bool Visible { get; set; } = true;
+        public bool Visible
+        {
+            get => _visible;
+            set
+            {
+                if (_visible != value)
+                {
+                    _visible = value;
+                    NoticeParentToRepaint();
+                }
+            }
+        }
 
         /// <summary>
         /// 当前选择的child项
         /// </summary>
-        public int SelectedIndex { get; set; }
+        public int SelectedIndex { get; protected set; }
 
         private void ShowDescription()
         {
@@ -378,55 +531,6 @@ namespace Bushuosx.ConsoleMenu
             }
         }
 
-        protected ConsoleColor DisabledItemForegroundColor = ConsoleColor.DarkGray;
-
-        protected SafeColor CatchConsoleColor()
-        {
-            return new SafeColor(Console.BackgroundColor, Console.ForegroundColor);
-        }
-        protected void SetConsoleColor(SafeColor color)
-        {
-            Console.BackgroundColor = color.BackgroundColor;
-            Console.ForegroundColor = color.ForegroundColor;
-        }
-
-        protected struct SafeColor
-        {
-            public SafeColor(ConsoleColor bColor, ConsoleColor fColor)
-            {
-                BackgroundColor = bColor;
-                ForegroundColor = fColor;
-            }
-            public ConsoleColor BackgroundColor;
-            public ConsoleColor ForegroundColor;
-        }
-
-        protected SafeColor GetSafeColor(ConsoleColor bColor, ConsoleColor fColor, bool intensity)
-        {
-            var rst = new SafeColor(bColor, fColor);
-
-            if (fColor == bColor)
-            {
-                if (rst.BackgroundColor == ConsoleColor.White)
-                {
-                    rst.ForegroundColor = ConsoleColor.Black;
-                }
-                else if (rst.BackgroundColor == ConsoleColor.Black)
-                {
-                    rst.ForegroundColor = ConsoleColor.White;
-                }
-                else
-                {
-                    rst.BackgroundColor = ConsoleColor.Black;
-                }
-            }
-            else if (intensity)
-            {
-                rst.BackgroundColor = fColor;
-                rst.ForegroundColor = bColor;
-            }
-            return rst;
-        }
 
         public MenuItem Parent { get; protected set; }
 
@@ -443,16 +547,23 @@ namespace Bushuosx.ConsoleMenu
 
         public void AddSubMenu(MenuItem menu)
         {
+            AddSubMenu(_children.Count, menu);
+        }
+        public void AddSubMenu(int index, MenuItem menu)
+        {
             if (menu == null)
             {
                 throw new ArgumentNullException(nameof(menu));
             }
-            //var m = menu.MemberwiseClone() as MenuItem;
+
             menu.Parent = this;
-            _children.Add(menu);
+            _children.Insert(index, menu);
+
+            //动态更新
+            RePaint();
         }
 
-        public void AddSubMenu(IEnumerable<MenuItem> menus)
+        public void AddSubMenu(int index, IEnumerable<MenuItem> menus)
         {
             if (menus == null)
             {
@@ -461,8 +572,24 @@ namespace Bushuosx.ConsoleMenu
             foreach (var item in menus)
             {
                 item.Parent = this;
-                _children.Add(item);
             }
+            _children.InsertRange(index, menus);
+
+            //动态更新
+            RePaint();
+        }
+        public void AddSubMenu(IEnumerable<MenuItem> menus)
+        {
+            AddSubMenu(_children.Count, menus);
+        }
+
+        public void AtachToMenu(MenuItem parentMenu)
+        {
+            if (parentMenu == null)
+            {
+                throw new ArgumentNullException(nameof(parentMenu));
+            }
+            parentMenu.AddSubMenu(this);
         }
 
         protected void RaiseEvent(EventHandler<MenuItemEventArgs> eventHandler, MenuItemEventArgs eventArgs)
@@ -470,28 +597,44 @@ namespace Bushuosx.ConsoleMenu
             eventHandler?.Invoke(this, eventArgs);
         }
 
-        private char? _key = null;
-        public char? Key
+        private char _key;
+        public char Key
         {
-            get { return _key; }
+            get => _key;
             set
             {
-                if (value.HasValue && char.IsLetterOrDigit(value.Value))
+                if (char.IsLetterOrDigit(value))
                 {
-                    _key = value.Value;
+                    if (_key != value)
+                    {
+                        _key = value;
+                        NoticeParentToRepaint();
+                    }
+                }
+                else
+                {
+                    throw new ArgumentException("Key must be a Letter or Digit");
                 }
             }
         }
 
-        private string _title = "-- no title --";
+        private string _title;
         public string Title
         {
-            get { return _title; }
+            get => _title;
             set
             {
                 if (!string.IsNullOrEmpty(value))
                 {
-                    _title = value;
+                    if (_title != value)
+                    {
+                        _title = value;
+                        NoticeParentToRepaint();
+                    }
+                }
+                else
+                {
+                    throw new ArgumentNullException(nameof(Title));
                 }
             }
         }
@@ -504,7 +647,7 @@ namespace Bushuosx.ConsoleMenu
             {
                 if (Title.Length > ShortTitleLength)
                 {
-                    return Title.Substring(0, ShortTitleLength) + "…";
+                    return Title.Substring(0, ShortTitleLength) + "~";
                 }
                 else
                 {
@@ -515,7 +658,19 @@ namespace Bushuosx.ConsoleMenu
 
         protected int ShortTitleLength { get; set; } = 6;
 
-        public ConsoleColor? Color { get; set; }
+        private ConsoleColor? _color;
+        public ConsoleColor? Color
+        {
+            get => _color;
+            set
+            {
+                if (_color != value)
+                {
+                    _color = value;
+                    NoticeParentToRepaint();
+                }
+            }
+        }
         protected ConsoleColor GetColor()
         {
             return Disabled ? DisabledItemForegroundColor : Color ?? Console.ForegroundColor;
@@ -527,7 +682,8 @@ namespace Bushuosx.ConsoleMenu
         {
             if (HasAnyChild)
             {
-                Active(Parent.ShouldClearScreen);
+                //active
+                Active(Parent?.Context);
             }
             else
             {
@@ -558,9 +714,9 @@ namespace Bushuosx.ConsoleMenu
             if (!eventArgs.IsCanceled)
             {
                 //跳出本地循环
-                Reset();
-                BreakLoop = true;
-                Parent?.Active(ShouldClearScreen);
+                RestoreContext();
+                Exit();
+                Parent?.Active();
             }
         }
 

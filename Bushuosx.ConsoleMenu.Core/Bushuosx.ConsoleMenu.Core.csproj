@@ -6,7 +6,10 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
+    <RepositoryUrl>https://github.com/bushuosx/ConsoleMenu.git</RepositoryUrl>
+    <RepositoryType />
+    <PackageProjectUrl>https://github.com/bushuosx/ConsoleMenu</PackageProjectUrl>
   </PropertyGroup>
 
 </Project>
