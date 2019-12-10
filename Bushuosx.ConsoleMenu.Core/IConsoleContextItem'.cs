@@ -4,9 +4,14 @@ using System.Text;
 
 namespace Bushuosx.ConsoleMenu
 {
+    /// <summary>
+    /// 用于保存console环境的项
+    /// </summary>
     public interface IConsoleContextItem
     {
-        //void CatchFromConsole();
+        /// <summary>
+        /// 恢复到console
+        /// </summary>
         void SetToConsole();
     }
 }

@@ -9,6 +9,42 @@
             无参构造时，直接catch from console
             </summary>
         </member>
+        <member name="T:Bushuosx.ConsoleMenu.IConsoleContextItem">
+            <summary>
+            用于保存console环境的项
+            </summary>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.IConsoleContextItem.SetToConsole">
+            <summary>
+            恢复到console
+            </summary>
+        </member>
+        <member name="T:Bushuosx.ConsoleMenu.MenuContext">
+            <summary>
+            菜单上下文。父菜单active时生成，用于绘制参考
+            </summary>
+        </member>
+        <member name="P:Bushuosx.ConsoleMenu.MenuContext.Style">
+            <summary>
+            菜单绘制样式
+            </summary>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuContext.#ctor(Bushuosx.ConsoleMenu.MenuStyle)">
+            <summary>
+            菜单上下文。父菜单active时生成，用于绘制参考
+            </summary>
+            <param name="menuStyle"></param>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuContext.SetToConsole">
+            <summary>
+            恢复至console
+            </summary>
+        </member>
+        <member name="T:Bushuosx.ConsoleMenu.MenuDrawingStyle">
+            <summary>
+            菜单激活时，处理console屏幕的方式
+            </summary>
+        </member>
         <member name="F:Bushuosx.ConsoleMenu.MenuDrawingStyle.ClearSreen">
             <summary>
             每次激活菜单前清屏
@@ -21,12 +57,58 @@
         </member>
         <member name="F:Bushuosx.ConsoleMenu.MenuDrawingStyle.FollowSystem">
             <summary>
-            系统默认的console流模式
+            依照系统的console流模式
             </summary>
         </member>
         <member name="T:Bushuosx.ConsoleMenu.MenuItem">
             <summary>
             适用于ConsoleApplication的菜单类
+            </summary>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.#ctor(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="title">菜单标题</param>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.#ctor(System.String,System.EventHandler{Bushuosx.ConsoleMenu.MenuItemEventArgs})">
+            <summary>
+            
+            </summary>
+            <param name="title">菜单标题</param>
+            <param name="onClick">EventHandler onClick</param>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.#ctor(System.String,System.EventHandler{Bushuosx.ConsoleMenu.MenuItemEventArgs},System.Char)">
+            <summary>
+            
+            </summary>
+            <param name="title">菜单标题</param>
+            <param name="onClick">EventHandler onClick</param>
+            <param name="key">激活菜单的快捷键，只能是字母或数字</param>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.#ctor(System.String,System.Action)">
+            <summary>
+            
+            </summary>
+            <param name="title">菜单标题</param>
+            <param name="onClick">EventHandler onClick</param>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.#ctor(System.String,System.Action,System.Char)">
+            <summary>
+            
+            </summary>
+            <param name="title">菜单标题</param>
+            <param name="onClick">EventHandler onClick</param>
+            <param name="key">激活菜单的快捷键，只能是字母或数字</param>
+        </member>
+        <member name="P:Bushuosx.ConsoleMenu.MenuItem.Context">
+            <summary>
+            保存console上下文
+            </summary>
+        </member>
+        <member name="F:Bushuosx.ConsoleMenu.MenuItem.DisabledItemForegroundColor">
+            <summary>
+            默认的禁用样式
             </summary>
         </member>
         <member name="P:Bushuosx.ConsoleMenu.MenuItem.IsActived">
@@ -38,7 +120,23 @@
             <summary>
             激活此菜单
             </summary>
-            <param name="clearScreen"></param>
+            <param name="menuStyle">菜单样式</param>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.Active(Bushuosx.ConsoleMenu.MenuContext)">
+            <summary>
+            激活此菜单
+            </summary>
+            <param name="menuContext">菜单上下文，应由父菜单传递给子菜单</param>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.Active">
+            <summary>
+            内部激活
+            </summary>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.PrepareDrawingContext">
+            <summary>
+            依据给定的menu style，做菜单绘制前准备
+            </summary>
         </member>
         <member name="M:Bushuosx.ConsoleMenu.MenuItem.RestoreContext">
             <summary>
@@ -50,6 +148,31 @@
             初始化一些参数
             </summary>
         </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.Exit">
+            <summary>
+            退出时恢复环境
+            </summary>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.SafeWriteTitle(System.Boolean,System.Boolean)">
+            <summary>
+            调用安全写入方法，输出菜单标题
+            </summary>
+            <param name="showKey"></param>
+            <param name="isSelected"></param>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.SafeWrite(System.String)">
+            <summary>
+            安全写入方法。防止颜色冲突。
+            </summary>
+            <param name="text"></param>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.SafeWriteLine(System.String,System.Boolean)">
+            <summary>
+            安全写入方法。防止颜色冲突。
+            </summary>
+            <param name="text"></param>
+            <param name="intensity"></param>
+        </member>
         <member name="M:Bushuosx.ConsoleMenu.MenuItem.BuildTitleString(System.Boolean)">
             <summary>
             根据需求生成标题样式
@@ -57,11 +180,57 @@
             <param name="showKey"></param>
             <returns></returns>
         </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.ShowParentPath">
+            <summary>
+            绘制 菜单路径
+            </summary>
+        </member>
         <member name="M:Bushuosx.ConsoleMenu.MenuItem.GetParents">
             <summary>
             获取父菜单列表，由近及远排列
             </summary>
             <returns></returns>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.RePaint">
+            <summary>
+            重新绘制菜单内容
+            </summary>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.IsCanBeSelectItem(Bushuosx.ConsoleMenu.MenuItem)">
+            <summary>
+            子菜单项是否可供用户选择
+            </summary>
+            <param name="item"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.GetUpChildItemIndex">
+            <summary>
+            获取上一子菜单项
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.GetDownChildItemIndex">
+            <summary>
+            获取下一子菜单项
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:Bushuosx.ConsoleMenu.MenuItem.SelectedIndexIsValid">
+            <summary>
+            当前选择的索引是否是有效的
+            </summary>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.IsValidChildIndex(System.Int32)">
+            <summary>
+            是否是当前有效的索引
+            </summary>
+            <param name="index"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Bushuosx.ConsoleMenu.MenuItem.BreakLoop">
+            <summary>
+            退出消息循环
+            </summary>
         </member>
         <member name="M:Bushuosx.ConsoleMenu.MenuItem.LoopMessage">
             <summary>
@@ -86,6 +255,190 @@
         <member name="P:Bushuosx.ConsoleMenu.MenuItem.SelectedIndex">
             <summary>
             当前选择的child项
+            </summary>
+        </member>
+        <member name="P:Bushuosx.ConsoleMenu.MenuItem.Parent">
+            <summary>
+            父菜单，顶层菜单时为null。
+            </summary>
+        </member>
+        <member name="P:Bushuosx.ConsoleMenu.MenuItem.Children">
+            <summary>
+            子菜单集合
+            </summary>
+        </member>
+        <member name="P:Bushuosx.ConsoleMenu.MenuItem.HasAnyChild">
+            <summary>
+            是否有子菜单
+            </summary>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.AddSubMenu(Bushuosx.ConsoleMenu.MenuItem)">
+            <summary>
+            增加子菜单项
+            </summary>
+            <param name="menu"></param>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.AddSubMenu(System.Int32,Bushuosx.ConsoleMenu.MenuItem)">
+            <summary>
+            增加子菜单项
+            </summary>
+            <param name="index">插入位置</param>
+            <param name="menu"></param>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.AddSubMenu(System.Int32,System.Collections.Generic.IEnumerable{Bushuosx.ConsoleMenu.MenuItem})">
+            <summary>
+            增加子菜单项
+            </summary>
+            <param name="index">插入位置</param>
+            <param name="menus"></param>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.AddSubMenu(System.Collections.Generic.IEnumerable{Bushuosx.ConsoleMenu.MenuItem})">
+            <summary>
+            增加子菜单项
+            </summary>
+            <param name="menus"></param>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.AtachToMenu(Bushuosx.ConsoleMenu.MenuItem)">
+            <summary>
+            附着到父菜单中子菜单集合的末尾
+            </summary>
+            <param name="parentMenu">父菜单</param>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.RaiseEvent(System.EventHandler{Bushuosx.ConsoleMenu.MenuItemEventArgs},Bushuosx.ConsoleMenu.MenuItemEventArgs)">
+            <summary>
+            引发事件
+            </summary>
+            <param name="eventHandler"></param>
+            <param name="eventArgs"></param>
+        </member>
+        <member name="P:Bushuosx.ConsoleMenu.MenuItem.Key">
+            <summary>
+            激活菜单的快捷键，只能是字母或数字
+            </summary>
+        </member>
+        <member name="P:Bushuosx.ConsoleMenu.MenuItem.Title">
+            <summary>
+            菜单标题，不能为空。
+            </summary>
+        </member>
+        <member name="P:Bushuosx.ConsoleMenu.MenuItem.Description">
+            <summary>
+            菜单项说明文字，nullable
+            </summary>
+        </member>
+        <member name="P:Bushuosx.ConsoleMenu.MenuItem.ShortTitle">
+            <summary>
+            返回短标题
+            </summary>
+        </member>
+        <member name="P:Bushuosx.ConsoleMenu.MenuItem.ShortTitleLength">
+            <summary>
+            默认的短标题长度
+            </summary>
+        </member>
+        <member name="P:Bushuosx.ConsoleMenu.MenuItem.Color">
+            <summary>
+            菜单前景色颜色
+            </summary>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.GetColor">
+            <summary>
+            获取当菜单的绘制颜色
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="E:Bushuosx.ConsoleMenu.MenuItem.OnClick">
+            <summary>
+            菜单被点击时的事件。当子菜单集合非空时，直接激活为前台菜单，而不会引发此事件。
+            </summary>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.RaiseClick(Bushuosx.ConsoleMenu.MenuItemEventArgs)">
+            <summary>
+            菜单被点击时的事件。当子菜单集合非空时，直接激活为前台菜单，而不会引发此事件。
+            </summary>
+            <param name="eventArgs"></param>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.Click">
+            <summary>
+            点击菜单。当子菜单集合非空时，直接激活为前台菜单，而不会引发此事件。
+            </summary>
+        </member>
+        <member name="E:Bushuosx.ConsoleMenu.MenuItem.OnClosing">
+            <summary>
+            关闭前台菜单时引发此事件。若想阻止关闭，前设置<see cref="P:Bushuosx.ConsoleMenu.MenuItemEventArgs.IsCanceled"/>为true。
+            </summary>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.Close">
+            <summary>
+            关闭前台菜单
+            </summary>
+        </member>
+        <member name="E:Bushuosx.ConsoleMenu.MenuItem.OnSelectChanged">
+            <summary>
+            selected index 改变时引发此事件
+            </summary>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuItem.SelectChildItem(System.Int32)">
+            <summary>
+            选中子菜单项
+            </summary>
+            <param name="index"></param>
+        </member>
+        <member name="E:Bushuosx.ConsoleMenu.MenuItem.OnBeforePaint">
+            <summary>
+            作为前台菜单时，绘制开始前引发此事件。
+            </summary>
+        </member>
+        <member name="E:Bushuosx.ConsoleMenu.MenuItem.OnAfterPaint">
+            <summary>
+            作为前台菜单时，绘制完成后引发此事件。
+            </summary>
+        </member>
+        <member name="T:Bushuosx.ConsoleMenu.MenuItemEventArgs">
+            <summary>
+            MenuItem事件参数
+            </summary>
+        </member>
+        <member name="P:Bushuosx.ConsoleMenu.MenuItemEventArgs.IsCanceled">
+            <summary>
+            设为true，将阻止事件继续传递
+            </summary>
+        </member>
+        <member name="T:Bushuosx.ConsoleMenu.MenuItemTitleStyle">
+            <summary>
+            标题展示风格
+            </summary>
+        </member>
+        <member name="F:Bushuosx.ConsoleMenu.MenuItemTitleStyle.KeyFront">
+            <summary>
+            若含Key,置于标题前端
+            </summary>
+        </member>
+        <member name="F:Bushuosx.ConsoleMenu.MenuItemTitleStyle.KeyEnd">
+            <summary>
+            若有Key,置于标题末尾
+            </summary>
+        </member>
+        <member name="T:Bushuosx.ConsoleMenu.MenuStyle">
+            <summary>
+            菜单绘制样式
+            </summary>
+        </member>
+        <member name="M:Bushuosx.ConsoleMenu.MenuStyle.#ctor(Bushuosx.ConsoleMenu.MenuDrawingStyle,Bushuosx.ConsoleMenu.MenuItemTitleStyle)">
+            <summary>
+            菜单绘制样式
+            </summary>
+            <param name="drawingStyle">绘制方式</param>
+            <param name="titleStyle">标题风格</param>
+        </member>
+        <member name="P:Bushuosx.ConsoleMenu.MenuStyle.DrawingStyle">
+            <summary>
+            绘制方式
+            </summary>
+        </member>
+        <member name="P:Bushuosx.ConsoleMenu.MenuStyle.TitleStyle">
+            <summary>
+            标题风格
             </summary>
         </member>
         <member name="M:Bushuosx.ConsoleMenu.SafeConsoleColor.#ctor">

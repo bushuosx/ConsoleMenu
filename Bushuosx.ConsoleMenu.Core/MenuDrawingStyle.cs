@@ -4,6 +4,9 @@ using System.Text;
 
 namespace Bushuosx.ConsoleMenu
 {
+    /// <summary>
+    /// 菜单激活时，处理console屏幕的方式
+    /// </summary>
     public enum MenuDrawingStyle
     {
         /// <summary>
@@ -15,7 +18,7 @@ namespace Bushuosx.ConsoleMenu
         /// </summary>
         InheritStartPoint = 1,
         /// <summary>
-        /// 系统默认的console流模式
+        /// 依照系统的console流模式
         /// </summary>
         FollowSystem
     }

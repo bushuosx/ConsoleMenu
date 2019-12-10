@@ -10,26 +10,56 @@ namespace Bushuosx.ConsoleMenu
     /// </summary>
     public class MenuItem
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="title">菜单标题</param>
         public MenuItem(string title)
         {
             Title = title;
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="title">菜单标题</param>
+        /// <param name="onClick">EventHandler onClick</param>
         public MenuItem(string title, EventHandler<MenuItemEventArgs> onClick) : this(title)
         {
             OnClick += onClick;
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="title">菜单标题</param>
+        /// <param name="onClick">EventHandler onClick</param>
+        /// <param name="key">激活菜单的快捷键，只能是字母或数字</param>
         public MenuItem(string title, EventHandler<MenuItemEventArgs> onClick, char key) : this(title, onClick)
         {
             Key = key;
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="title">菜单标题</param>
+        /// <param name="onClick">EventHandler onClick</param>
         public MenuItem(string title, Action onClick) : this(title)
         {
             OnClick += (s, e) => onClick();
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="title">菜单标题</param>
+        /// <param name="onClick">EventHandler onClick</param>
+        /// <param name="key">激活菜单的快捷键，只能是字母或数字</param>
         public MenuItem(string title, Action onClick, char key) : this(title, onClick)
         {
             Key = key;
         }
+
+        /// <summary>
+        /// 保存console上下文
+        /// </summary>
         protected MenuContext Context { get; private set; }
 
         //protected MenuStyle Style { get; set; }
@@ -105,7 +135,9 @@ namespace Bushuosx.ConsoleMenu
         //    public SafeConsoleColor ConsoleColor;
         //}
 
-
+        /// <summary>
+        /// 默认的禁用样式
+        /// </summary>
         protected ConsoleColor DisabledItemForegroundColor = ConsoleColor.DarkGray;
 
         //private CursorStatus? PointOnActive { get; set; }
@@ -122,7 +154,7 @@ namespace Bushuosx.ConsoleMenu
         /// <summary>
         /// 激活此菜单
         /// </summary>
-        /// <param name="clearScreen"></param>
+        /// <param name="menuStyle">菜单样式</param>
         public void Active(MenuStyle menuStyle)
         {
             Context = new MenuContext(menuStyle);
@@ -130,6 +162,10 @@ namespace Bushuosx.ConsoleMenu
             Active();
         }
 
+        /// <summary>
+        /// 激活此菜单
+        /// </summary>
+        /// <param name="menuContext">菜单上下文，应由父菜单传递给子菜单</param>
         protected void Active(MenuContext menuContext)
         {
             Context = menuContext;
@@ -137,6 +173,9 @@ namespace Bushuosx.ConsoleMenu
             Active();
         }
 
+        /// <summary>
+        /// 内部激活
+        /// </summary>
         private void Active()
         {
             Enter();
@@ -146,6 +185,9 @@ namespace Bushuosx.ConsoleMenu
             LoopMessage();
         }
 
+        /// <summary>
+        /// 依据给定的menu style，做菜单绘制前准备
+        /// </summary>
         private void PrepareDrawingContext()
         {
             switch (Context.Style.DrawingStyle)
@@ -197,18 +239,30 @@ namespace Bushuosx.ConsoleMenu
             //Console.CursorVisible = false;
             IsActived = true;
         }
+        /// <summary>
+        /// 退出时恢复环境
+        /// </summary>
         private void Exit()
         {
             BreakLoop = true;
             IsActived = false;
         }
 
+        /// <summary>
+        /// 调用安全写入方法，输出菜单标题
+        /// </summary>
+        /// <param name="showKey"></param>
+        /// <param name="isSelected"></param>
         protected void SafeWriteTitle(bool showKey, bool isSelected)
         {
             var txt = BuildTitleString(showKey);
             SafeWriteLine(txt, isSelected);
         }
 
+        /// <summary>
+        /// 安全写入方法。防止颜色冲突。
+        /// </summary>
+        /// <param name="text"></param>
         protected void SafeWrite(string text)
         {
             var oc = new SafeConsoleColor();
@@ -219,6 +273,11 @@ namespace Bushuosx.ConsoleMenu
             oc.SetToConsole();
         }
 
+        /// <summary>
+        /// 安全写入方法。防止颜色冲突。
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="intensity"></param>
         protected void SafeWriteLine(string text, bool intensity)
         {
             var oc = new SafeConsoleColor();
@@ -254,6 +313,9 @@ namespace Bushuosx.ConsoleMenu
             }
         }
 
+        /// <summary>
+        /// 绘制 菜单路径
+        /// </summary>
         private void ShowParentPath()
         {
             var ps = GetParents();
@@ -269,7 +331,6 @@ namespace Bushuosx.ConsoleMenu
             }
 
             SafeWrite(ShortTitle);
-            //Console.Write(Console.Out.NewLine);
         }
 
         /// <summary>
@@ -283,6 +344,9 @@ namespace Bushuosx.ConsoleMenu
             return rst;
         }
 
+        /// <summary>
+        /// 重新绘制菜单内容
+        /// </summary>
         protected void RePaint()
         {
             if (IsActived)
@@ -304,18 +368,19 @@ namespace Bushuosx.ConsoleMenu
             }
         }
 
-        //protected void RePaintOnChanged()
-        //{
-        //    if (IsActived)
-        //    {
-        //        RePaint();
-        //    }
-        //}
-
+        /// <summary>
+        /// 子菜单项是否可供用户选择
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
         private bool IsCanBeSelectItem(MenuItem item)
         {
             return item.Visible && !item.Disabled;
         }
+        /// <summary>
+        /// 获取上一子菜单项
+        /// </summary>
+        /// <returns></returns>
         private int GetUpChildItemIndex()
         {
             //需要修改
@@ -350,7 +415,10 @@ namespace Bushuosx.ConsoleMenu
 
             return SelectedIndex;
         }
-
+        /// <summary>
+        /// 获取下一子菜单项
+        /// </summary>
+        /// <returns></returns>
         private int GetDownChildItemIndex()
         {
             if (!SelectedIndexIsValid)
@@ -384,16 +452,25 @@ namespace Bushuosx.ConsoleMenu
 
             return SelectedIndex;
         }
-
+        /// <summary>
+        /// 当前选择的索引是否是有效的
+        /// </summary>
         protected bool SelectedIndexIsValid
         {
             get { return IsValidChildIndex(SelectedIndex); }
         }
+        /// <summary>
+        /// 是否是当前有效的索引
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         private bool IsValidChildIndex(int index)
         {
             return index >= 0 && index < Children.Count;
         }
-
+        /// <summary>
+        /// 退出消息循环
+        /// </summary>
         private bool BreakLoop { get; set; }
 
         /// <summary>
@@ -531,24 +608,41 @@ namespace Bushuosx.ConsoleMenu
             }
         }
 
-
+        /// <summary>
+        /// 父菜单，顶层菜单时为null。
+        /// </summary>
         public MenuItem Parent { get; protected set; }
 
-        protected List<MenuItem> _children = new List<MenuItem>();
+        private List<MenuItem> _children = new List<MenuItem>();
+        /// <summary>
+        /// 子菜单集合
+        /// </summary>
         public IReadOnlyList<MenuItem> Children
         {
             get { return _children; }
         }
 
-        public bool HasAnyChild
+        /// <summary>
+        /// 是否有子菜单
+        /// </summary>
+        private bool HasAnyChild
         {
             get { return _children.Count > 0; }
         }
 
+        /// <summary>
+        /// 增加子菜单项
+        /// </summary>
+        /// <param name="menu"></param>
         public void AddSubMenu(MenuItem menu)
         {
             AddSubMenu(_children.Count, menu);
         }
+        /// <summary>
+        /// 增加子菜单项
+        /// </summary>
+        /// <param name="index">插入位置</param>
+        /// <param name="menu"></param>
         public void AddSubMenu(int index, MenuItem menu)
         {
             if (menu == null)
@@ -562,7 +656,11 @@ namespace Bushuosx.ConsoleMenu
             //动态更新
             RePaint();
         }
-
+        /// <summary>
+        /// 增加子菜单项
+        /// </summary>
+        /// <param name="index">插入位置</param>
+        /// <param name="menus"></param>
         public void AddSubMenu(int index, IEnumerable<MenuItem> menus)
         {
             if (menus == null)
@@ -578,11 +676,19 @@ namespace Bushuosx.ConsoleMenu
             //动态更新
             RePaint();
         }
+        /// <summary>
+        /// 增加子菜单项
+        /// </summary>
+        /// <param name="menus"></param>
         public void AddSubMenu(IEnumerable<MenuItem> menus)
         {
             AddSubMenu(_children.Count, menus);
         }
 
+        /// <summary>
+        /// 附着到父菜单中子菜单集合的末尾
+        /// </summary>
+        /// <param name="parentMenu">父菜单</param>
         public void AtachToMenu(MenuItem parentMenu)
         {
             if (parentMenu == null)
@@ -592,12 +698,20 @@ namespace Bushuosx.ConsoleMenu
             parentMenu.AddSubMenu(this);
         }
 
+        /// <summary>
+        /// 引发事件
+        /// </summary>
+        /// <param name="eventHandler"></param>
+        /// <param name="eventArgs"></param>
         protected void RaiseEvent(EventHandler<MenuItemEventArgs> eventHandler, MenuItemEventArgs eventArgs)
         {
             eventHandler?.Invoke(this, eventArgs);
         }
 
         private char _key;
+        /// <summary>
+        /// 激活菜单的快捷键，只能是字母或数字
+        /// </summary>
         public char Key
         {
             get => _key;
@@ -619,6 +733,9 @@ namespace Bushuosx.ConsoleMenu
         }
 
         private string _title;
+        /// <summary>
+        /// 菜单标题，不能为空。
+        /// </summary>
         public string Title
         {
             get => _title;
@@ -639,8 +756,14 @@ namespace Bushuosx.ConsoleMenu
             }
         }
 
+        /// <summary>
+        /// 菜单项说明文字，nullable
+        /// </summary>
         public string Description { get; set; }
 
+        /// <summary>
+        /// 返回短标题
+        /// </summary>
         public string ShortTitle
         {
             get
@@ -655,10 +778,15 @@ namespace Bushuosx.ConsoleMenu
                 }
             }
         }
-
+        /// <summary>
+        /// 默认的短标题长度
+        /// </summary>
         protected int ShortTitleLength { get; set; } = 6;
 
         private ConsoleColor? _color;
+        /// <summary>
+        /// 菜单前景色颜色
+        /// </summary>
         public ConsoleColor? Color
         {
             get => _color;
@@ -671,13 +799,23 @@ namespace Bushuosx.ConsoleMenu
                 }
             }
         }
+        /// <summary>
+        /// 获取当菜单的绘制颜色
+        /// </summary>
+        /// <returns></returns>
         protected ConsoleColor GetColor()
         {
             return Disabled ? DisabledItemForegroundColor : Color ?? Console.ForegroundColor;
         }
 
-
+        /// <summary>
+        /// 菜单被点击时的事件。当子菜单集合非空时，直接激活为前台菜单，而不会引发此事件。
+        /// </summary>
         public event EventHandler<MenuItemEventArgs> OnClick;
+        /// <summary>
+        /// 菜单被点击时的事件。当子菜单集合非空时，直接激活为前台菜单，而不会引发此事件。
+        /// </summary>
+        /// <param name="eventArgs"></param>
         protected void RaiseClick(MenuItemEventArgs eventArgs)
         {
             if (HasAnyChild)
@@ -690,6 +828,9 @@ namespace Bushuosx.ConsoleMenu
                 RaiseEvent(OnClick, eventArgs);
             }
         }
+        /// <summary>
+        /// 点击菜单。当子菜单集合非空时，直接激活为前台菜单，而不会引发此事件。
+        /// </summary>
         public void Click()
         {
             if (Visible && !Disabled)
@@ -698,38 +839,39 @@ namespace Bushuosx.ConsoleMenu
             }
         }
 
-        //public EventHandler<MenuItemEventArgs> OnChildrenChanged { get; }
-        //protected void RaiseChildrenChange(MenuItemEventArgs eventArgs)
-        //{
-        //    RaiseEvent(OnChildrenChanged, eventArgs);
-        //}
-
+        /// <summary>
+        /// 关闭前台菜单时引发此事件。若想阻止关闭，前设置<see cref="MenuItemEventArgs.IsCanceled"/>为true。
+        /// </summary>
         public event EventHandler<MenuItemEventArgs> OnClosing;
+        /// <summary>
+        /// 关闭前台菜单
+        /// </summary>
         public void Close()
         {
-            MenuItemEventArgs eventArgs = new MenuItemEventArgs();
-
-            RaiseEvent(OnClosing, eventArgs);
-
-            if (!eventArgs.IsCanceled)
+            if (IsActived)
             {
-                //跳出本地循环
-                RestoreContext();
-                Exit();
-                Parent?.Active();
+                MenuItemEventArgs eventArgs = new MenuItemEventArgs();
+
+                RaiseEvent(OnClosing, eventArgs);
+
+                if (!eventArgs.IsCanceled)
+                {
+                    //跳出本地循环
+                    RestoreContext();
+                    Exit();
+                    Parent?.Active();
+                }
             }
         }
 
+        /// <summary>
+        /// selected index 改变时引发此事件
+        /// </summary>
         public event EventHandler<MenuItemEventArgs> OnSelectChanged;
-        //public void SelectItem(int index)
-        //{
-        //    if (IsValidChildIndex(index))
-        //    {
-        //        SelectedIndex = index;
-        //        RaiseEvent(OnSelectChange, null);
-        //        RePaint();
-        //    }
-        //}
+        /// <summary>
+        /// 选中子菜单项
+        /// </summary>
+        /// <param name="index"></param>
         protected void SelectChildItem(int index)
         {
             if (SelectedIndex != index && IsValidChildIndex(index))
@@ -739,8 +881,13 @@ namespace Bushuosx.ConsoleMenu
                 RePaint();
             }
         }
-
+        /// <summary>
+        /// 作为前台菜单时，绘制开始前引发此事件。
+        /// </summary>
         public event EventHandler<MenuItemEventArgs> OnBeforePaint;
+        /// <summary>
+        /// 作为前台菜单时，绘制完成后引发此事件。
+        /// </summary>
         public event EventHandler<MenuItemEventArgs> OnAfterPaint;
     }
 }
