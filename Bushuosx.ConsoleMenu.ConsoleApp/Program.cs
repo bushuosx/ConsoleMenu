@@ -16,7 +16,7 @@ namespace Bushuosx.ConsoleMenu.ConsoleApp
             var openMenu = new MenuItem("文件管理") { Key = 'o', Color = ConsoleColor.Green };
             var invisibleMenu = new MenuItem("默认不可见") { Visible = false };
             var reserveInvisibleMenu = new MenuItem("反转可见", () => invisibleMenu.Visible = !invisibleMenu.Visible);
-            reserveInvisibleMenu.AtachToMenu(mainItem);
+            //reserveInvisibleMenu.AtachToMenu(mainItem);
             var disableMenu = new MenuItem("disable项", () => Console.WriteLine("disable on click")) { Disabled = true, Key = 'd' };
             var closeMenu = new MenuItem("关闭", (s, e) => mainItem.Close()) { Key = 'c', Color = ConsoleColor.Red };
 
@@ -35,6 +35,8 @@ namespace Bushuosx.ConsoleMenu.ConsoleApp
             closeFileMenu.AtachToMenu(fileMenu);
             mainItem.AddSubMenu(disableMenu);
             mainItem.AddSubMenu(closeMenu);
+
+            mainItem.AddSubMenu(1, reserveInvisibleMenu);
 
 
             mainItem.Active(new MenuStyle(MenuDrawingStyle.InheritStartPoint, MenuItemTitleStyle.KeyFront));

@@ -12,4 +12,9 @@
     <PackageProjectUrl>https://github.com/bushuosx/ConsoleMenu</PackageProjectUrl>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>Bushuosx.ConsoleMenu.Core.xml</DocumentationFile>
+    <OutputPath></OutputPath>
+  </PropertyGroup>
+
 </Project>
