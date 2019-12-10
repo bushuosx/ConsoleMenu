@@ -17,4 +17,8 @@
     <OutputPath></OutputPath>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Bushuosx.ConsoleMenu.Core.xml" />
+  </ItemGroup>
+
 </Project>

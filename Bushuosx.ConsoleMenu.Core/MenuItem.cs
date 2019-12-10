@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
 
 namespace Bushuosx.ConsoleMenu
@@ -11,7 +10,7 @@ namespace Bushuosx.ConsoleMenu
     public class MenuItem
     {
         /// <summary>
-        /// 
+        /// 适用于ConsoleApplication的菜单类
         /// </summary>
         /// <param name="title">菜单标题</param>
         public MenuItem(string title)
@@ -19,7 +18,7 @@ namespace Bushuosx.ConsoleMenu
             Title = title;
         }
         /// <summary>
-        /// 
+        /// 适用于ConsoleApplication的菜单类
         /// </summary>
         /// <param name="title">菜单标题</param>
         /// <param name="onClick">EventHandler onClick</param>
@@ -28,7 +27,7 @@ namespace Bushuosx.ConsoleMenu
             OnClick += onClick;
         }
         /// <summary>
-        /// 
+        /// 适用于ConsoleApplication的菜单类
         /// </summary>
         /// <param name="title">菜单标题</param>
         /// <param name="onClick">EventHandler onClick</param>
@@ -38,7 +37,7 @@ namespace Bushuosx.ConsoleMenu
             Key = key;
         }
         /// <summary>
-        /// 
+        /// 适用于ConsoleApplication的菜单类
         /// </summary>
         /// <param name="title">菜单标题</param>
         /// <param name="onClick">EventHandler onClick</param>
@@ -47,7 +46,7 @@ namespace Bushuosx.ConsoleMenu
             OnClick += (s, e) => onClick();
         }
         /// <summary>
-        /// 
+        /// 适用于ConsoleApplication的菜单类
         /// </summary>
         /// <param name="title">菜单标题</param>
         /// <param name="onClick">EventHandler onClick</param>
@@ -62,89 +61,10 @@ namespace Bushuosx.ConsoleMenu
         /// </summary>
         protected MenuContext Context { get; private set; }
 
-        //protected MenuStyle Style { get; set; }
-
-        //protected struct CursorStatus
-        //{
-        //    public int Left;
-        //    public int Top;
-        //    public int Size;
-        //    public bool Visible;
-        //}
-        //private CursorStatus CatchCursorStatus()
-        //{
-        //    return new CursorStatus { Left = Console.CursorLeft, Top = Console.CursorTop, Size = Console.CursorSize, Visible = Console.CursorVisible };
-        //}
-        //private void SetCursorStatus(CursorStatus cursorStatus)
-        //{
-        //    Console.SetCursorPosition(cursorStatus.Left, cursorStatus.Top);
-        //    Console.CursorSize = cursorStatus.Size;
-        //    Console.CursorVisible = cursorStatus.Visible;
-        //}
-
-        //protected struct SafeConsoleColor
-        //{
-        //    public ConsoleColor BackgroundColor;
-        //    public ConsoleColor ForegroundColor;
-        //}
-
-        //protected SafeConsoleColor CatchConsoleColor()
-        //{
-        //    return new SafeConsoleColor { BackgroundColor = Console.BackgroundColor, ForegroundColor = Console.ForegroundColor };
-        //}
-        //protected void SetConsoleColor(SafeConsoleColor color)
-        //{
-        //    Console.BackgroundColor = color.BackgroundColor;
-        //    Console.ForegroundColor = color.ForegroundColor;
-        //}
-
-        //protected SafeConsoleColor BuildSafeColor(ConsoleColor bColor, ConsoleColor fColor, bool intensity)
-        //{
-        //    var rst = new SafeConsoleColor { BackgroundColor = bColor, ForegroundColor = fColor };
-
-        //    if (fColor == bColor)
-        //    {
-        //        if (rst.BackgroundColor == ConsoleColor.White)
-        //        {
-        //            rst.ForegroundColor = ConsoleColor.Black;
-        //        }
-        //        else if (rst.BackgroundColor == ConsoleColor.Black)
-        //        {
-        //            rst.ForegroundColor = ConsoleColor.White;
-        //        }
-        //        else
-        //        {
-        //            rst.BackgroundColor = ConsoleColor.Black;
-        //        }
-        //    }
-        //    else if (intensity)
-        //    {
-        //        rst.BackgroundColor = fColor;
-        //        rst.ForegroundColor = bColor;
-        //    }
-        //    return rst;
-        //}
-
-        ///// <summary>
-        ///// console menu 环境
-        ///// </summary>
-        //protected struct ConsoleMenuContext
-        //{
-        //    public MenuStyle MenuStyle;
-        //    public CursorStatus CursorStatus;
-        //    public SafeConsoleColor ConsoleColor;
-        //}
-
         /// <summary>
         /// 默认的禁用样式
         /// </summary>
         protected ConsoleColor DisabledItemForegroundColor = ConsoleColor.DarkGray;
-
-        //private CursorStatus? PointOnActive { get; set; }
-        //private SafeConsoleColor? ColorOnActive { get; set; }
-        //private bool? CursorVisibleOnActive { get; set; }
-
-        //protected bool ShouldClearScreen { get; set; }
 
         /// <summary>
         /// 指示当前菜单是否正在展示
@@ -522,7 +442,7 @@ namespace Bushuosx.ConsoleMenu
                     }
                 }
 
-                ///
+                //
                 if (BreakLoop)
                 {
                     break;

@@ -1,7 +1,14 @@
 # Bushuosx.ConsoleMenu
 
 Demo:
-![](https://github.com/bushuosx/ConsoleMenu/raw/master/example20191210.gif)
+![бнЪО](https://github.com/bushuosx/ConsoleMenu/raw/master/example20191210.gif)
+
+nuget:
+[https://www.nuget.org/packages/Bushuosx.ConsoleMenu.Core/](https://www.nuget.org/packages/Bushuosx.ConsoleMenu.Core/)
+
+```bash
+Install-Package Bushuosx.ConsoleMenu.Core
+```
 
 Example Code:
 ```csharp
